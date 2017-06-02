@@ -1,0 +1,42 @@
+Headers 
+/////////////////////////////////////////////////
+
+#ifndef SBUFFER_FXH
+#include <packs\happy.fxh\sbuffer.fxh>
+#endif
+
+#ifndef CALC_FXH
+#include <packs\happy.fxh\calc.fxh>
+#endif
+
+#ifndef NOISE_FXH
+#include <packs\happy.fxh\noise.fxh>
+#endif
+
+#ifndef MAP_FXH
+#include <packs\happy.fxh\map.fxh>
+#endif
+
+#ifndef TRANSFORM_FXH
+#include <packs\happy.fxh\transform.fxh>
+#endif
+
+#ifndef SDF_FXH
+#include <packs\happy.fxh\sdf.fxh>
+#endif
+
+#ifndef RAYMARCH_FXH
+#include <packs\happy.fxh\raymarch.fxh>
+#endif
+
+#ifndef UV_FXH
+#include <packs\happy.fxh\uv.fxh>
+#endif
+
+#ifndef COLOR_FXH
+#include <packs\happy.fxh\color.fxh>
+#endif
+
+#ifndef SPLINE_FXH
+#include <packs\happy.fxh\spline.fxh>
+#endif
