@@ -1285,35 +1285,39 @@ float3 sineDFV(float3 p, float offset = 67)
 // http://www.iquilezles.org/www/articles/morenoise/morenoise.htm
 
 #define IQFBM2D(name, basis, p, persistence, lacunarity, octaves)               \
-    float sum##name = 0.0;                                                      \
     float2 dsum##name = 0.0;                                                    \
     float amp##name = 1.0;                                                      \
     float totalAmp##name = 0.0;                                                 \
     float2 p##name = p;                                                         \
     float freq##name = 1.0;                                                     \
+                                                                                \
+    float basis##name = basis(p##name * freq##name);                            \
+    float sum##name = basis##name;                                              \
+                                                                                \
     for(int i##name=0; i##name <= octaves; i##name++)                           \
     {                                                                           \
         p##name += i##name*27.3;                                                \
-        float basis##name = basis(p##name * freq##name);                        \
+        basis##name = basis(p##name * freq##name);                        \
         dsum##name += calcGradS2(basis, p##name * freq##name, 0.1/ freq##name); \
         sum##name += amp##name * basis##name / (1 + dot(dsum##name, dsum##name));\
         totalAmp##name += abs(amp##name);                                       \
         amp##name *= persistence;                                               \
         freq##name *= lacunarity;                                               \
-    }                                                                           \
+   }                                                                             \
     float name = sum##name/totalAmp##name
 
 #define IQFBM3D(name, basis, p, persistence, lacunarity, octaves)               \
-    float sum##name = 0.0;                                                      \
     float3 dsum##name = 0.0;                                                    \
     float amp##name = 1.0;                                                      \
     float totalAmp##name = 0.0;                                                 \
     float3 p##name = p;                                                         \
     float freq##name = 1.0;                                                     \
+    float basis##name = basis(p##name * freq##name);                            \
+    float sum##name = basis##name;                                              \
     for(int i##name=0; i##name <= octaves; i##name++)                           \
     {                                                                           \
         p##name += i##name*27.3;                                                \
-        float basis##name = basis(p##name * freq##name);                        \
+        basis##name = basis(p##name * freq##name);                        \
         dsum##name += calcGradS3(basis, p##name * freq##name, 0.1/ freq##name); \
         sum##name += amp##name * basis##name / (1 + dot(dsum##name, dsum##name));\
         totalAmp##name += abs(amp##name);                                       \
@@ -1367,24 +1371,6 @@ float3 sineDFV(float3 p, float offset = 67)
 
 
 // WIP
-#define JORDANFBM2D(name, basis, p, persistence, lacunarity, octaves, warp)     \
-    float sum##name = 0.0;                                                      \
-    float2 dsum##name = 0.0;                                                    \
-    float amp##name = 1.0;                                                      \
-    float totalAmp##name = 0.0;                                                 \
-    float2 p##name = p;                                                         \
-    float freq##name = 1.0;                                                     \
-    for(int i##name=0; i##name <= octaves; i##name++)                           \
-    {                                                                           \
-        p##name += i##name*27.3 + warp * dsum##name;                            \
-        float basis##name = basis(p##name * freq##name);                        \
-        dsum##name += -calcGradS2(basis, p##name * freq##name, 0.1/ freq##name); \
-        sum##name += basis##name * amp##name;                                   \
-        totalAmp##name += abs(amp##name);                                       \
-        amp##name *= persistence;                                               \
-        freq##name *= lacunarity;                                               \
-    }                                                                           \
-    float name = sum##name/totalAmp##name
 
 ////////////////////////////////////////////////////////////////
 //EOF

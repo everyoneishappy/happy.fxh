@@ -166,7 +166,7 @@ float fTriangle(float2 p, float2 a, float2 b, float2 c)
 
 ////////////////////////////////////////////////////////////////
 // https://github.com/keijiro/ShaderSketches
-float fLineLattice (float2 p, float width = 0.05)
+float fLineTruchet (float2 p, float width = 0.05)
 {
     float rnd = frac(sin(dot(floor(p), float2(21.98, 19.37))) * 4231.73);
     rnd = floor(rnd * 2) / 2;
@@ -178,7 +178,7 @@ float fLineLattice (float2 p, float width = 0.05)
 	return min(d1, d2) - width * 0.5;
 }
 
-float fCircleLattice (float2 p, float width = 0.05)
+float fCircleTruchet (float2 p, float width = 0.05)
 {
     float rnd = frac(sin(dot(floor(p), float2(21.98, 19.37))) * 4231.73);
     rnd = floor(rnd * 2) / 2;
@@ -190,7 +190,7 @@ float fCircleLattice (float2 p, float width = 0.05)
 	return min(d1, d2) - width * 0.5;
 }
 
-float fOctoLattice (float2 p, float width = 0.05)
+float fOctoTruchet (float2 p, float width = 0.05)
 {
 	float rnd = frac(sin(dot(floor(p), float2(21.98, 19.37))) * 4231.73);
 	float flip = frac(rnd * 13.8273) > 0.5 ? 1 : -1;
@@ -1066,6 +1066,16 @@ float fBoxGrid (float3 p, float r, float spacing)
 	b = min(b,  fBox(p.xzy, float3(r,2000,r)));
 	b = min(b,  fBox(p.yxz, float3(r,2000,r)));
 	return b;
+}
+
+float fTriangleGrid (float2 p, float r, float spacing = 1)
+{
+	p+=500;  // just hack to avoid artifacts at 0
+	float2 cell = pMod2(p, spacing);
+	float t1 = fTriangle(p, float2(-.5,-.5), float2(-.5,.5), float2(.5,-.5) );
+	float t2 = fTriangle(p, float2(-.5,.5), float2(.5,.5), float2(.5,-.5) ) ;
+	return fOpOutline(min(t1,  t2), r);
+	
 }
 
 // IQ's hexagon code, with a bit of Fabrice's lerped in. Not optimized yet.
