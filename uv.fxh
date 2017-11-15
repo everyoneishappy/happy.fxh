@@ -14,24 +14,74 @@
 #endif
 
 // convert between uv and screen space (vvvv)
-float2 screen2uv(float2 p)
+float2 screenToUV(float2 p)
 {
 	p.y *= -1;
 	return p *.5 + .5;
 };
 
-float2 uv2screen(float2 uv)
+float2 UVToScreen(float2 uv)
 {
 	uv.y = 1- uv.y;
 	return uv = uv * 2 - 1;
 };
 
 
+float2 cubicUV(float3 pos, float3 norm)
+{
+	norm = float3(abs(norm.x), abs(norm.y), abs(norm.z));
+
+	if (norm.x > norm.y && norm.x > norm.z) //project on x axis
+	return float2(pos.z, -pos.y)+.5;
+
+	else if (norm.y > norm.x && norm.y > norm.z) //project on y axis
+	return float2(pos.x, -pos.z)+.5;
+
+	else return float2(pos.x, -pos.y)+.5; // project on z axis
+};
+
+float2 sphericalUV(float3 norm)
+{ 
+	float2 result;
+	float r;
+	r = norm.x * norm.x + norm.y * norm.y + norm.z * norm.z;
+
+	if (r > 0)
+	{
+		r = sqrt(r);
+		float p, y;
+		p = asin(norm.y/r) / TWOPI;
+		y = 0;
+		if (norm.z != 0) y = atan2(-norm.x, -norm.z);
+		else if (norm.x > 0) y = -PI / 2;
+       	 else y = PI / 2;
+		y /=  TWOPI;
+		result = float2(-y,-(p+.25)*2);		
+	}
+	else result = 0;
+	return result;
+};
+
+//TODO should use pos+norms
+float2 cylindricalUV(float3 pos)
+{
+	float2 uv;
+	uv.y = -pos.y-.5;
+	if (length(pos) > 0)
+	{
+		if (pos.z != 0)  uv.x = atan2(pos.x, -pos.z);
+		else if (pos.x > 0) uv.x = -PI / 2;
+        else uv.x = PI / 2;
+		uv.x /=  TWOPI;
+	}
+	else uv.x = 0;
+	return uv;
+};
 
 //UV Interface and Classes definitions
 
 //Usage:////////////////////////////////////////////////////////////////////////////////////////////////
-//iUVMode uvMode <string linkclass="UVmap,PlanarXY,PlanarXZ,PlanarZY,Cubic,Spherical,Cylindrical";>;
+// iUVMode uvMode <string linkclass="UVmap,PlanarXY,PlanarXZ,PlanarZY,Cubic,Spherical,Cylindrical";>;
 //
 //uvMode.Map(pos,norm,uv);
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -64,12 +114,7 @@ class cCubic  : iUVMode
 {
    float2 Map(float3 pos, float3 norm, float2 uv)
 	{
-		norm = float3(abs(norm.x), abs(norm.y), abs(norm.z));
-		if (norm.x > norm.y && norm.x > norm.z)
-		return float2(pos.z, -pos.y)+.5;
-		else if (norm.y > norm.x && norm.y > norm.z)
-		return float2(pos.x, -pos.z)+.5;
-		else return float2(pos.x, -pos.y)+.5;
+		return cubicUV(pos, norm);
 	}
 };
 
@@ -77,26 +122,7 @@ class cSpherical : iUVMode
 {
    float2 Map(float3 pos, float3 norm, float2 uv)
 	{ 
-		
-		float2 result;
-		float r;
-		r = norm.x * norm.x + norm.y * norm.y + norm.z * norm.z;
-
-	
-		if (r > 0)
-		{
-			r = sqrt(r);
-			float p, y;
-			p = asin(norm.y/r) / TWOPI;
-			y = 0;
-			if (norm.z != 0) y = atan2(-norm.x, -norm.z);
-			else if (norm.x > 0) y = -PI / 2;
-       	 	else y = PI / 2;
-			y /=  TWOPI;
-			result = float2(-y,-(p+.25)*2);		
-		}
-		else result = 0;
-		return result;
+		return sphericalUV(norm);
 	}
 };
 
@@ -104,17 +130,7 @@ class cCylindrical : iUVMode
 {
    float2 Map(float3 pos, float3 norm, float2 uv)
 	{
-		uv.y = -pos.y-.5;
-		if (length(pos) > 0)
-		{
-		if (pos.z != 0)  uv.x = atan2(pos.x, -pos.z);
-		else if (pos.x > 0) uv.x = -PI / 2;
-        else uv.x = PI / 2;
-		uv.x /=  TWOPI;
-		}
-		else uv.x = 0;
-		return uv;
-	
+		return cylindricalUV(pos);
 	}
 };
 

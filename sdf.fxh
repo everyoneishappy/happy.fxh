@@ -21,16 +21,27 @@ float2 I(float2 a, float2 b) {return (a.x>b.x) ? a : b;}
 //
 ////////////////////////////////////////////////////////////////
 
-#define PI 3.14159265
+#ifndef PI
+#define PI 3.1415926535897
+#endif
+
+#ifndef TWOPI
 #define TWOPI 6.28318531
+#endif
+
+#ifndef TAU
 #define TAU (2*PI)
+#endif
+
+#ifndef PHI
 #define PHI (sqrt(5)*0.5 + 0.5)
+#endif
 
 // Clamp to [0,1] - this operation is free under certain circumstances.
 // For further information see
 // http://www.humus.name/Articles/Persson_LowLevelThinking.pdf and
 // http://www.humus.name/Articles/Persson_LowlevelShaderOptimization.pdf
-#define saturate(x) clamp(x, 0, 1)
+//#define saturate(x) clamp(x, 0, 1)
 
 // Sign function that doesn't return 0
 float sgn(float x) {
@@ -106,7 +117,7 @@ float vmin(float4 v) {
 //
 ////////////////////////////////////////////////////////////////
 
-float draw2DSDF (float dist, float softness)
+float draw2DSDF (float dist, float softness = 0.005)
 {
 	return smoothstep(softness, 0, dist);
 };
@@ -114,6 +125,13 @@ float draw2DSDF (float dist, float softness)
 float fCircle(float2 p, float radius)
 {
 	return length(p) - radius;
+}
+
+float fEclipse(float2 p, float2 r)
+{
+	float a2 = r.x * r.x;
+	float b2 = r.y * r.y;
+	return (b2 * p.x * p.x + a2 * p.y * p.y - a2 * b2) / (a2 * b2);
 }
 
 // Cheap Box: distance to corners is overestimated
@@ -164,9 +182,15 @@ float fTriangle(float2 p, float2 a, float2 b, float2 c)
 	return max(max(u, v), w);
 }
 
+float fHexagon(float2 p, float radius) 
+{
+  float2 q = abs(p);
+  return max((q.x * 0.866025 + q.y * 0.5), q.y) - radius;
+}
+
 ////////////////////////////////////////////////////////////////
 // https://github.com/keijiro/ShaderSketches
-float fLineLattice (float2 p, float width = 0.05)
+float fLineTruchet (float2 p, float width = 0.05)
 {
     float rnd = frac(sin(dot(floor(p), float2(21.98, 19.37))) * 4231.73);
     rnd = floor(rnd * 2) / 2;
@@ -178,7 +202,7 @@ float fLineLattice (float2 p, float width = 0.05)
 	return min(d1, d2) - width * 0.5;
 }
 
-float fCircleLattice (float2 p, float width = 0.05)
+float fCircleTruchet (float2 p, float width = 0.05)
 {
     float rnd = frac(sin(dot(floor(p), float2(21.98, 19.37))) * 4231.73);
     rnd = floor(rnd * 2) / 2;
@@ -190,7 +214,7 @@ float fCircleLattice (float2 p, float width = 0.05)
 	return min(d1, d2) - width * 0.5;
 }
 
-float fOctoLattice (float2 p, float width = 0.05)
+float fOctoTruchet (float2 p, float width = 0.05)
 {
 	float rnd = frac(sin(dot(floor(p), float2(21.98, 19.37))) * 4231.73);
 	float flip = frac(rnd * 13.8273) > 0.5 ? 1 : -1;
@@ -638,8 +662,106 @@ float fTruncatedIcosahedron(float3 p, float r)
 	return fGDF(p, r, 3, 18);
 }
 
+// some fractal novelties 
 
+float fJulia(float3 p, float4 pars = float4(.5, 0, .75, 0), uint iter = 11)
+{	
+    //float4 c = 0.4*cos( float4(0.5,3.9,1.4,1.1) + time*float4(1.2,1.7,1.3,2.5) ) - float4(0.3,0.0,0.0,0.0);
 
+	float4 z = float4(p,0.0);
+    float md2 = 1.0;
+    float mz2 = dot(z,z);
+
+    float4 trap = float4(abs(z.xyz),dot(z,z));
+
+    for( uint i=0; i<iter; i++ )
+    {
+        // |dz|^2 -> 4*|dz|^2
+        md2 *= 4.0*mz2;
+        
+        // z -> z2 + c
+        z = float4( z.x*z.x-dot(z.yzw,z.yzw),
+                  2.0*z.x*z.yzw ) + pars;
+
+        trap = min( trap, float4(abs(z.xyz),dot(z,z)) );
+
+        mz2 = dot(z,z);
+        if(mz2>4.0) break;
+    }
+    //return length(pos) -.25;
+     return 0.25*sqrt(mz2/md2)*log(mz2);
+}
+
+float fMandelbulb(float3 p, float3 pars = float3(64, 16, 8), uint iter = 32)
+{	
+	float a = 1;
+    float3 w = p;
+    float m = dot(w,w);
+    float4 trap = float4(abs(w),m);
+   	float dz = a;
+    
+	for( uint i=0; i<iter; i++ )
+    {
+        float m2 = m*m;
+        float m4 = m2*m2;
+		dz = 8.0*sqrt(m4*m2*m)*dz + 1.0;
+
+        float x = w.x; float x2 = x*x; float x4 = x2*x2;
+        float y = w.y; float y2 = y*y; float y4 = y2*y2;
+        float z = w.z; float z2 = z*z; float z4 = z2*z2;
+
+        float k3 = x2 + z2;
+        float k2 = rsqrt( k3*k3*k3*k3*k3*k3*k3 );
+        float k1 = x4 + y4 + z4 - 6.0*y2*z2 - 6.0*x2*y2 + 2.0*z2*x2;
+        float k4 = x2 - y2 + z2;
+
+        w.x = p.x +  pars.x *x*y*z*(x2-z2)*k4*(x4-6.0*x2*z2+z4)*k1*k2;
+        w.y = p.y + -pars.y *y2*k3*k4*k4 + k1*k1;
+        w.z = p.z +  -pars.z*y*k4*(x4*x4 - 28.0*x4*x2*z2 + 70.0*x4*z4 - 28.0*x2*z2*z4 + z4*z4)*k1*k2;
+
+        trap = min( trap, float4(abs(w),m) );
+
+        m = dot(w,w);
+		if( m > 4.0 )
+        break;
+    }
+    return abs(0.25*log(m)*sqrt(m)/dz);
+}
+
+float fKali(float3 pos, float3 pars = float3 (.2, 1.6, 0.5), uint iter = 3)
+{	
+	float minRad2 = clamp(pars.x, 1.0e-9, 1.0);
+	float4 p = float4(pos,1);
+	float4 p0 = p;  // p.w is the distance estimate
+	for (uint i = 0; i < iter; i++)
+	{
+		p.xyz = clamp(p.xyz, -1.0, 1.0) * 2.0 - p.xyz;
+
+		// sphere folding: 
+		float r2 = dot(p.xyz, p.xyz);
+		
+		if (r2 < minRad2) p /= minRad2; 
+			else if (r2 < 1.0) p /= r2;
+
+		p *= clamp(max(minRad2/r2, minRad2), 0.0, 1.0);
+
+		// scale, translate
+		p = p*float4(pars.xxx, abs(pars.x)) / minRad2 + p0;
+	}
+	return abs((length(p.xyz) - pars.y) / p.w - pars.z);
+}
+
+float fKaliThorns(float3 p, float width=.12, float rotation = 1.8)
+{	
+	float dotp=dot(p,p);
+	p=p/dotp;
+	p=sin(p.xyz+float3(sin(1.+rotation)*2.,-rotation,-rotation*2.));
+	float d=length(p.yz)-width;
+	d=min(d,length(p.xz)-width);
+	d=min(d,length(p.xy)-width);
+	d=min(d,length(p*p*p)-width);
+	return d*dotp;
+}
 
 
 
@@ -915,7 +1037,7 @@ float fOpDifferenceRound (float a, float b, float r)
 // extrude (aka limit) 2D distance field in third dimension
 float fOpExtrude(float p, float d, float depth)
 {
-	return I(abs(p)-depth, d);
+	return I(abs(p-depth*.5)-depth, d);
 }
 
 float fOpExtrudeChamfer(float p, float d, float depth, float r)
@@ -1055,7 +1177,8 @@ float fOpTongue(float a, float b, float ra, float rb)
 float fBoxGrid (float2 p, float r, float spacing = 1)
 {
 	float2 cell = pMod2(p, spacing);
-	return min(fBox(p.yx, float2(r,spacing/2)),  fBox(p.xy, float2(r,spacing/2)));
+	return min(abs(p.x)-r,  abs(p.y)-r);
+	//return min(fBox(p.yx, float2(r,spacing/2)),  fBox(p.xy, float2(r,spacing/2)));
 	
 }
 
@@ -1066,6 +1189,18 @@ float fBoxGrid (float3 p, float r, float spacing)
 	b = min(b,  fBox(p.xzy, float3(r,2000,r)));
 	b = min(b,  fBox(p.yxz, float3(r,2000,r)));
 	return b;
+}
+
+float fTriangleGrid (float2 p, float r, float spacing = 1)
+{
+	p.x *= 5./3.; // slightly breaking the distance, but makes nice triangles
+	pR45(p);
+	p+=500;  // just hack to avoid artifacts at 0
+	float2 cell = pMod2(p, spacing);
+	float t1 = fTriangle(p, float2(-.5,-.5), float2(-.5,.5), float2(.5,-.5) );
+	float t2 = fTriangle(p, float2(-.5,.5), float2(.5,.5), float2(.5,-.5) ) ;
+	return fOpOutline(min(t1,  t2), r);
+	
 }
 
 // IQ's hexagon code, with a bit of Fabrice's lerped in. Not optimized yet.

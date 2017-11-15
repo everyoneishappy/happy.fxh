@@ -11,12 +11,65 @@
 #include <packs\happy.fxh\calc.fxh> // used for gradient ops
 #endif
 
-// basis functions include sine, valueNoise, perlin, simplex, worleyFast, worley
+/* 
+
+/////////////////////////////////////////////////////////////////////////////
+//
+//          USAGE
+//
+/////////////////////////////////////////////////////////////////////////////
+	
+	basis functions include:
+
+		sine
+		valueNoise 
+		perlin 
+		simplex
+		worleyFast 
+		worley
+			
+	they can be used like this:
+
+		float [basis] (float2 p)		// 2D scalar noise
+		float [basis] (float3 p)		// 3D scalar noise
+
+		float2 [basis]2 (float2 p)		// 2D vector noise
+		float3 [basis]3 (float3 p)		// 3D vector noise
+
+		float3 [basis]DFV float3(p)		// return a divergence-free 3D vector field (DFV) of the noise
+
+		float3 [basis]Grad (float2 p)	// 2D scalar noise as .x and gradient returned as .yz
+		float4 [basis]Grad (float3 p)	// 3D scalar noise as .x and gradient returned as .yzw
+
+		float2 [basis]Grad2 (float2 p, out float2 gradX, out float2 gradY) // 2D vector noise and X,Y gradients
+		float3 [basis]Grad3 (float3 p, out float3 gradX, out float3 gradY, out float3 gradZ) // 3D vector noise and X,Y,Z gradients
 
 
-//  Worley Interfaces:
-//  iCellDist cellDistance <string linkclass="EuclideanSquared,Euclidean,Chebyshev,Manhattan,Minkowski";>;
-//  iCellFunc cellFunction <string linkclass="F1,F2,F2MinusF1,Average,Crackle";>;
+	worley functions can also have thier signature extended for more options
+		eg: worley(p, cellDistance, cellFunction)
+
+	distance metrics include:
+		EuclideanSquared
+		Euclidean
+		Chebyshev
+		Manhattan
+		Minkowski
+		Cubes
+
+
+	Cell functions include:
+		F1
+		F2
+		F2MinusF1
+		F1PlusF2
+		Average
+		Crackle
+
+	instances are already made for each, so you canjust write the name, or use an interface as a selector:
+	  	iCellDist cellDistance <string linkclass="EuclideanSquared,Euclidean,Chebyshev,Manhattan,Minkowski,Cubes";>;
+	  	iCellFunc cellFunction <string linkclass="F1,F2,F2MinusF1,F1PlusF2,Average,Crackle";>;
+
+*/
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -38,15 +91,17 @@ int name##Octaves = 4;
 //
 /////////////////////////////////////////////////////////////////////////////
 
+// domain offset defualts for calling the same function is several places
 #ifndef NOISEOFFSETS
 #define NOISEOFFSETS float2(67, 197)
 #endif
 
+// takes a scalar function FUNCTIONNAME and defines a new function returning 2D vector called [FUNCTIONNAME]2
 #define NOISE2DVECTORFUNCTION(FUNCTIONNAME)                                             \
 float2 FUNCTIONNAME##2(float2 p)                                                        \
 {return float2(FUNCTIONNAME(p), FUNCTIONNAME (p+NOISEOFFSETS.x));};                 
                                                                                         
-
+// takes a scalar function FUNCTIONNAME and defines a new function returning 2D vector & gradients called [FUNCTIONNAME]2
 #define NOISE2DVECTORGRADFUNCTION(FUNCTIONNAME)                                         \
 float2 FUNCTIONNAME##2(float2 p, out float2 gradX, out float2 gradY)                    \
 {                                                                                       \
@@ -57,11 +112,12 @@ float2 FUNCTIONNAME##2(float2 p, out float2 gradX, out float2 gradY)            
     return float2(nx.x, ny.x);                                                          \
 };
 
+// takes a scalar function FUNCTIONNAME and defines a new function returning 3D vector called [FUNCTIONNAME]3
 #define NOISE3DVECTORFUNCTION(FUNCTIONNAME)                                             \
 float3 FUNCTIONNAME##3(float3 p)                                                        \
 {return float3(FUNCTIONNAME(p), FUNCTIONNAME (p+NOISEOFFSETS.x), FUNCTIONNAME(p+NOISEOFFSETS.y));};                 
                                                                                         
-
+// takes a scalar function FUNCTIONNAME and defines a new function returning 3D vector & gradients called [FUNCTIONNAME]3
 #define NOISE3DVECTORGRADFUNCTION(FUNCTIONNAME)                                         \
 float3 FUNCTIONNAME##3(float3 p, out float3 gradX, out float3 gradY, out float3 gradZ)  \
 {                                                                                       \
@@ -959,11 +1015,31 @@ class cMinkowski : iCellDist
         return pow(pow(offset.x, p) + pow(offset.y, p), 1.0/p);  
     }
 };
+
+class cCubes : iCellDist {
+	float get(float3 off) {
+		return max( abs(off.x) *0.866025 + abs(off.z)*0.5 + off.y*0.5, abs(off.z) - off.y );
+	}
+	float get(float2 off) {
+		return max( abs(off.x) *0.866025 + off.y *0.5, -off.y );
+	}
+};
+
+
+
+
 cEuclidean Euclidean;
 cEuclideanSquared EuclideanSquared;
 cChebyshev Chebyshev;
 cManhattan Manhattan;
 cMinkowski Minkowski;
+cCubes Cubes;
+
+
+
+
+
+
 
 interface iCellFunc {float result(float2 dist); };
 class cF1 : iCellFunc
@@ -987,6 +1063,13 @@ class cF2MinusF1 : iCellFunc
         return dist.y - dist.x;
     }
 };
+class cF1PlusF2 : iCellFunc
+{
+    float result(float2 dist)
+    {
+        return dist.x + dist.y;
+    }
+};
 class cAverage: iCellFunc
 {
     float result(float2 dist)
@@ -1004,6 +1087,7 @@ class cCrackle: iCellFunc
 cF1 F1;
 cF2 F2;
 cF2MinusF1 F2MinusF1;
+cF1PlusF2 F1PlusF2;
 cAverage Average;
 cCrackle Crackle;
 
@@ -1285,35 +1369,39 @@ float3 sineDFV(float3 p, float offset = 67)
 // http://www.iquilezles.org/www/articles/morenoise/morenoise.htm
 
 #define IQFBM2D(name, basis, p, persistence, lacunarity, octaves)               \
-    float sum##name = 0.0;                                                      \
     float2 dsum##name = 0.0;                                                    \
     float amp##name = 1.0;                                                      \
     float totalAmp##name = 0.0;                                                 \
     float2 p##name = p;                                                         \
     float freq##name = 1.0;                                                     \
+                                                                                \
+    float basis##name = basis(p##name * freq##name);                            \
+    float sum##name = basis##name;                                              \
+                                                                                \
     for(int i##name=0; i##name <= octaves; i##name++)                           \
     {                                                                           \
         p##name += i##name*27.3;                                                \
-        float basis##name = basis(p##name * freq##name);                        \
+        basis##name = basis(p##name * freq##name);                        \
         dsum##name += calcGradS2(basis, p##name * freq##name, 0.1/ freq##name); \
         sum##name += amp##name * basis##name / (1 + dot(dsum##name, dsum##name));\
         totalAmp##name += abs(amp##name);                                       \
         amp##name *= persistence;                                               \
         freq##name *= lacunarity;                                               \
-    }                                                                           \
+   }                                                                             \
     float name = sum##name/totalAmp##name
 
 #define IQFBM3D(name, basis, p, persistence, lacunarity, octaves)               \
-    float sum##name = 0.0;                                                      \
     float3 dsum##name = 0.0;                                                    \
     float amp##name = 1.0;                                                      \
     float totalAmp##name = 0.0;                                                 \
     float3 p##name = p;                                                         \
     float freq##name = 1.0;                                                     \
+    float basis##name = basis(p##name * freq##name);                            \
+    float sum##name = basis##name;                                              \
     for(int i##name=0; i##name <= octaves; i##name++)                           \
     {                                                                           \
         p##name += i##name*27.3;                                                \
-        float basis##name = basis(p##name * freq##name);                        \
+        basis##name = basis(p##name * freq##name);                        \
         dsum##name += calcGradS3(basis, p##name * freq##name, 0.1/ freq##name); \
         sum##name += amp##name * basis##name / (1 + dot(dsum##name, dsum##name));\
         totalAmp##name += abs(amp##name);                                       \
@@ -1367,24 +1455,6 @@ float3 sineDFV(float3 p, float offset = 67)
 
 
 // WIP
-#define JORDANFBM2D(name, basis, p, persistence, lacunarity, octaves, warp)     \
-    float sum##name = 0.0;                                                      \
-    float2 dsum##name = 0.0;                                                    \
-    float amp##name = 1.0;                                                      \
-    float totalAmp##name = 0.0;                                                 \
-    float2 p##name = p;                                                         \
-    float freq##name = 1.0;                                                     \
-    for(int i##name=0; i##name <= octaves; i##name++)                           \
-    {                                                                           \
-        p##name += i##name*27.3 + warp * dsum##name;                            \
-        float basis##name = basis(p##name * freq##name);                        \
-        dsum##name += -calcGradS2(basis, p##name * freq##name, 0.1/ freq##name); \
-        sum##name += basis##name * amp##name;                                   \
-        totalAmp##name += abs(amp##name);                                       \
-        amp##name *= persistence;                                               \
-        freq##name *= lacunarity;                                               \
-    }                                                                           \
-    float name = sum##name/totalAmp##name
 
 ////////////////////////////////////////////////////////////////
 //EOF

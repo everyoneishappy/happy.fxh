@@ -36,6 +36,8 @@ float3 bias(float3 x, float control = 0.5)
 
 
 
+
+
 float gain(float x, float control = 0.5)
 {
 	if (control > 0)
@@ -194,6 +196,9 @@ float3 mapMirror(float3 Input, float3 InMin, float3 InMax, float3 OutMin, float3
 	vec.z = mapMirror( Input.z,  InMin.z,  InMax.z,  OutMin.z,  OutMax.z);
 	return vec;
 }
+
+//TODO add interface for map types
+
 ////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////
