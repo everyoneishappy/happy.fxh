@@ -6,37 +6,67 @@
 
 #define RAYMARCH_FXH
 
+////////////////////////////////////////////////////////////////
+//
+//             Basic Ray March Functon
+//
+////////////////////////////////////////////////////////////////
+
+// define a placeholder function for the SDF
+#ifndef SF3D
+float placeHolderSDF(float3 p)
+{
+	float d=9999999;
+	d=min(d,length(p)-.25);
+	d=min(d,dot(p, float3(0,1,0)));
+	return d;
+}
+#define SF3D placeHolderSDF
+#endif
+
+float3 rayMarch(float3 rayPos, float3 rayDir, float stepLength = .9, float minDist = 0.1, float maxDist = 200.0, int maxIter = 120)
+{
+	float3 p = rayPos + rayDir * minDist;
+	for(int i=0; i<maxIter; i++)
+	{
+		float dist = SF3D(p);
+		p += rayDir * dist * stepLength;	
+		float z = length(p-rayPos);
+		if(abs(dist) < .002 * z || z > maxDist) break;
+	}
+	return p;
+}
+////////////////////////////////////////////////////////////////
+
+
+
+
+////////////////////////////////////////////////////////////////
+//
+//             Raymarcher
+//
+////////////////////////////////////////////////////////////////
+#ifdef RAYMARCHER
+////////////////////////////////////////////////////////////////
+// Paramerters
+int marchMaxIterations <string uiname="March Max Iterations";> = 120;
+float marchMaxDistance <string uiname="March Max Distance";> = 200;
+float marchMinDistance <string uiname="March Min Distance";> = 0.1;
+float marchStepLength <string uiname="March Step Length"; float uimin=0.0; float uimax=1.0;> = 0.75;
+////////////////////////////////////////////////////////////////
+
+float4x4 MBtVI:VIEWINVERSE;
+float4x4 MBtPI:PROJECTIONINVERSE;
+
 #ifndef CALC_FXH
 #include <packs\happy.fxh\calc.fxh>
 #endif
 ////////////////////////////////////////////////////////////////
 //
-//             place holder SDF
-//
-////////////////////////////////////////////////////////////////
-#ifndef SF3D
-float placeHolderSDF(float3 p)
-{
-		float d=9999999;
-	d=min(d,length(p)-.25);
-	d=min(d,dot(p, float3(0,1,0)));
-	return d;
-	//return float2 (d, 0);  // distance, optional matID
-}
-#define SF3D placeHolderSDF
-#endif
-
-////////////////////////////////////////////////////////////////
-
-
-float4x4 MBtVI:VIEWINVERSE;
-float4x4 MBtPI:PROJECTIONINVERSE;
-
-////////////////////////////////////////////////////////////////
-//
 //             Ray Setup
 //
 ////////////////////////////////////////////////////////////////
+
 float2 r2d(float2 x,float a){a*=acos(-1)*2;return float2(cos(a)*x.x+sin(a)*x.y,cos(a)*x.y-sin(a)*x.x);}
 void setupRay(float2 uv, out float3 ro, out float3 rd)
 {	
@@ -73,46 +103,6 @@ void setupRay(float2 uv, out float3 ro, out float3 rd)
 }
 ////////////////////////////////////////////////////////////////
 
-
-////////////////////////////////////////////////////////////////
-//
-//             Raymarcher
-//
-////////////////////////////////////////////////////////////////
-
-////////////////////////////////////////////////////////////////
-// Paramerters
-int marchMaxIterations <string uiname="March Max Iterations";> = 120;
-float marchMaxDistance <string uiname="March Max Distance";> = 200;
-float marchMinDistance <string uiname="March Min Distance";> = 0.2;
-float marchStepLength <string uiname="March Step Length"; float uimin=0.0; float uimax=1.0;> = 0.75;
-////////////////////////////////////////////////////////////////
-
-////////////////////////////////////////////////////////////////
-// Function
-void rayMarch(float2 uv, out float3 ro, out float3 rd, out float3 p, out float3 n, out float z)
-{
-	setupRay(uv, ro, rd);
-	p=ro+rd * marchMinDistance;
-	#ifdef FIXEDMAX
-	for(int i=0; i<FIXEDMAX; i++) // may need to swith to fixed length in some cases
-	#else
-	for(int i=0; i<marchMaxIterations; i++) // otherwise use our normal max
-	#endif
-
-	{
-		float d=SF3D(p).x;	
-		p+=rd*d*marchStepLength;	
-		z=length(p-ro);
-		if(abs(d) < .002 * z || z > marchMaxDistance) break;
-	}
-	float2 ff=SF3D(p);
-	if(abs(ff.x)>.5)discard;
-	n = calcNormS3(SF3D, p, .01*sqrt(z));
-}
-
-////////////////////////////////////////////////////////////////
-
 ////////////////////////////////////////////////////////////////
 //
 //             Pixel Footprint
@@ -130,6 +120,24 @@ void calcPPD(float2 uv, float z, float3 rd, float3 n, out float3 ppdx, out float
 	ppdx = z * (rdx*dot(rd, n)/dot(rdx,n) - rd);
 	ppdy = z * (rdy*dot(rd, n)/dot(rdy,n) - rd);
 }
+
+////////////////////////////////////////////////////////////////
+
+
+// Raymarch a scene.  Takes uv and returns pos(p), normals(n) & distance(z)
+void rayMarcher(float2 uv, out float3 p, out float3 n, out float3 rd, out float z)
+{
+	float3 ro;
+	setupRay(uv, ro, rd);
+	p = rayMarch(ro, rd, marchStepLength, marchMinDistance, marchMaxDistance, marchMaxIterations);
+	float ff=SF3D(p);
+	if(abs(ff)>.5)discard;
+	z = length(p - ro);
+	n = calcNormS3(SF3D, p, .01*sqrt(z));
+}
+
+// END RAYMARCHER
+#endif
 ////////////////////////////////////////////////////////////////
 
 

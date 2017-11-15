@@ -1193,11 +1193,8 @@ float fBoxGrid (float3 p, float r, float spacing)
 
 float fTriangleGrid (float2 p, float r, float spacing = 1)
 {
-<<<<<<< HEAD
 	p.x *= 5./3.; // slightly breaking the distance, but makes nice triangles
 	pR45(p);
-=======
->>>>>>> origin/master
 	p+=500;  // just hack to avoid artifacts at 0
 	float2 cell = pMod2(p, spacing);
 	float t1 = fTriangle(p, float2(-.5,-.5), float2(-.5,.5), float2(.5,-.5) );
