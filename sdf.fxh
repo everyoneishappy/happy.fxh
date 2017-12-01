@@ -37,6 +37,11 @@ float2 I(float2 a, float2 b) {return (a.x>b.x) ? a : b;}
 #define PHI (sqrt(5)*0.5 + 0.5)
 #endif
 
+// glsl style mod
+#ifndef mod
+#define mod(x, y) (x - y * floor((x) / y))
+#endif
+
 // Clamp to [0,1] - this operation is free under certain circumstances.
 // For further information see
 // http://www.humus.name/Articles/Persson_LowLevelThinking.pdf and
@@ -817,7 +822,7 @@ float pMod1(inout float p, float size)
 {
 	float halfsize = size*0.5;
 	float c = floor((p + halfsize)/size);
-	p = abs((p + halfsize) % size) - halfsize;
+	p = mod(p + halfsize, size) - halfsize;
 	return c;
 }
 
@@ -826,8 +831,8 @@ float pModMirror1(inout float p, float size)
 {
 	float halfsize = size*0.5;
 	float c = floor((p + halfsize)/size);
-	p = abs((p + halfsize) % size) - halfsize;
-	p *= abs(c % 2.0)*2 - 1;
+	p = mod(p + halfsize,size) - halfsize;
+	p *= mod(c, 2.0)*2 - 1;
 	return c;
 }
 
@@ -837,7 +842,7 @@ float pModSingle1(inout float p, float size)
 	float halfsize = size*0.5;
 	float c = floor((p + halfsize)/size);
 	if (p >= 0)
-		p = ((p + halfsize) % size) - halfsize;
+		p = mod(p + halfsize, size) - halfsize;
 	return c;
 }
 
@@ -846,7 +851,7 @@ float pModInterval1(inout float p, float size, float start, float stop)
 {
 	float halfsize = size*0.5;
 	float c = floor((p + halfsize)/size);
-	p = abs((p + halfsize) % size) - halfsize;
+	p = mod(p+halfsize, size) - halfsize;
 	if (c > stop) { //yes, this might not be the best thing numerically.
 		p += size*(c - stop);
 		c = stop;
@@ -878,9 +883,9 @@ float pModPolar(inout float2 p, float repetitions)
 // Repeat in two dimensions
 float2 pMod2(inout float2 p, float2 size) 
 {
-	float2 halfsize = size*0.5;
+	float2 halfsize = size * 0.5;
 	float2 c = floor((p + halfsize)/size);
-	p = abs((p + halfsize) % size) - halfsize;
+	p = mod(p + halfsize, size) - halfsize;
 	return c;
 }
 
@@ -889,8 +894,8 @@ float2 pModMirror2(inout float2 p, float2 size)
 {
 	float2 halfsize = size*0.5;
 	float2 c = floor((p + halfsize)/size);
-	p = abs((p + halfsize) % size) - halfsize;
-	p *= abs(c % 2)*2 - 1;
+	p = mod(p + halfsize, size) - halfsize;
+	p *= mod(c, 2) * 2 - 1;
 	return c;
 }
 
@@ -899,8 +904,8 @@ float2 pModGrid2(inout float2 p, float2 size)
 {
 	float2 halfsize = size*0.5;
 	float2 c = floor((p + halfsize)/size);
-	p = abs((p + halfsize) % size) - halfsize;
-	p *= abs(c%2)*2 - 1;
+	p = mod(p + halfsize, size) - halfsize;
+	p *= mod(c, 2) * 2 - 1;
 	p -= size/2;
 	if (p.x > p.y) p.xy = p.yx;
 	return floor(c/2);
@@ -911,7 +916,7 @@ float3 pMod3(inout float3 p, float3 size)
 {
 	float3 halfsize = size*0.5;
 	float3 c = floor((p + halfsize)/size);
-	p = abs((p + halfsize) % size) - halfsize;
+	p = mod(p + size * 0.5, size) - size * 0.5;
 	return c;
 }
 
