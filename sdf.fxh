@@ -99,6 +99,8 @@ float vmin(float4 v) {
 	return min(min(v.x, v.y), min(v.z, v.w));
 }
 
+float dot2( in float3 v ) { return dot(v,v); }
+
 
 ////////////////////////////////////////////////////////////////
 //
@@ -255,6 +257,27 @@ float fPlane(float3 p,  float distanceFromOrigin = 0, float3 n = float3(0,1,0))
 	return dot(p, n) + distanceFromOrigin;
 }
 
+//Unsigned
+float fTriangle( float3 p, float3 a, float3 b, float3 c )
+{
+    float3 ba = b - a; float3 pa = p - a;
+    float3 cb = c - b; float3 pb = p - b;
+    float3 ac = a - c; float3 pc = p - c;
+    float3 nor = cross( ba, ac );
+
+    return sqrt(
+    (sign(dot(cross(ba,nor),pa)) +
+     sign(dot(cross(cb,nor),pb)) +
+     sign(dot(cross(ac,nor),pc))<2.0)
+     ?
+     min( min(
+     dot2(ba*clamp(dot(ba,pa)/dot2(ba),0.0,1.0)-pa),
+     dot2(cb*clamp(dot(cb,pb)/dot2(cb),0.0,1.0)-pb) ),
+     dot2(ac*clamp(dot(ac,pc)/dot2(ac),0.0,1.0)-pc) )
+     :
+     dot(nor,pa)*dot(nor,pa)/dot2(nor) );
+}
+
 // Cheap Box: distance to corners is overestimated
 float fBoxCheap(float3 p, float3 b) 
 { //cheap box
@@ -340,6 +363,18 @@ float fTriPrism( float3 p, float2 h )
     float3 q = abs(p);
     return max(q.z-h.y,max(q.x*0.866025+p.y*0.5,-p.y)-h.x*0.5);
 }
+
+float fPyramid(float3 p, float3 h ) 
+{
+    float box = fBox( p - float3(0,-2.0*h.z,0),2.0*h.z); 
+    float d = 0.0;
+    d = max( d, abs( dot(p, float3( -h.x, h.y, 0 )) ));
+    d = max( d, abs( dot(p, float3(  h.x, h.y, 0 )) ));
+    d = max( d, abs( dot(p, float3(  0, h.y, h.x )) ));
+    d = max( d, abs( dot(p, float3(  0, h.y,-h.x )) ));
+    float octa = d - h.z;
+    return max(-box,octa);
+ }
 
 // Hexagonal prism, circumcircle variant
 float fHexagonCircumcircle(float3 p, float2 h) 
