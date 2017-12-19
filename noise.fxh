@@ -1346,6 +1346,36 @@ float3 sineDFV(float3 p, float offset = 67)
     }                                                                       \
     float name = sum##name/totalAmp##name
 
+    // 2D vector Fractal Sum fBm
+#define FBM2(name, basis, p, persistence, lacunarity, octaves)              \
+    float2 sum##name = 0.0;                                                 \
+    float amp##name = 1.0;                                                  \
+    float totalAmp##name = 0.0;                                             \
+    float2 freq##name = 1.0;                                                \
+    for(int i##name=0; i##name <= octaves; i##name++)                       \
+    {                                                                       \
+        sum##name += basis((p+i##name*27.3) * freq##name) * amp##name;      \
+        totalAmp##name += abs(amp##name);                                   \
+        amp##name *= persistence;                                           \
+        freq##name *= lacunarity;                                           \
+    }                                                                       \
+    float2 name = sum##name/totalAmp##name
+
+        // 3D vector Fractal Sum fBm
+#define FBM3(name, basis, p, persistence, lacunarity, octaves)              \
+    float3 sum##name = 0.0;                                                 \
+    float amp##name = 1.0;                                                  \
+    float totalAmp##name = 0.0;                                             \
+    float3 freq##name = 1.0;                                                \
+    for(int i##name=0; i##name <= octaves; i##name++)                       \
+    {                                                                       \
+        sum##name += basis((p+i##name*27.3) * freq##name) * amp##name;      \
+        totalAmp##name += abs(amp##name);                                   \
+        amp##name *= persistence;                                           \
+        freq##name *= lacunarity;                                           \
+    }                                                                       \
+    float3 name = sum##name/totalAmp##name
+
 // Multi Fractal fBm (good for ridged noise)
 #define MFBM(name, basis, p, persistence, lacunarity, octaves)              \
     float sum##name = 0.0;                                                  \
