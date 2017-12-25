@@ -1,5 +1,5 @@
 <!DOCTYPE PATCH  SYSTEM "http://vvvv.org/versions/vvvv50beta35.7.dtd" >
-   <PATCH nodename="C:\Users\Kyle\Desktop\Dropbox\VVVV Files\vvvv_50beta35.7_x64\packs\Happy.fxh\nodes\modules\DefineNoiseBasis (DX11 Shader).v4p" scrollx="0" scrolly="0" systemname="DefineNoiseBasis (DX11 Shader)" filename="C:\Users\Kyle\Desktop\Dropbox\VVVV Files\vvvv_50beta35.7_x64\packs\Happy.fxh\nodes\modules\DefineNoiseBasis (DX11 Shader).v4p">
+   <PATCH nodename="C:\Users\Kyle\Desktop\Dropbox\VVVV Files\vvvv_50beta35.7_x64\packs\Happy.fxh\nodes\modules\DefineNoiseBasisWIP (DX11 Shader).v4p" scrollx="0" scrolly="0" systemname="DefineNoiseBasisWIP (DX11 Shader)" filename="C:\Users\Kyle\Desktop\Dropbox\VVVV Files\vvvv_50beta35.7_x64\packs\Happy.fxh\nodes\modules\DefineNoiseBasisWIP (DX11 Shader).v4p">
    <BOUNDS type="Window" left="30870" top="690" width="16275" height="14115">
    </BOUNDS>
    <NODE nodename="IOBox (Enumerations)" componentmode="InABox" id="1" systemname="IOBox (Enumerations)">
