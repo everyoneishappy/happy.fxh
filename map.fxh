@@ -22,16 +22,16 @@ float bias(float x, float control = 0.5)
  	return result;
 }
 
-float2 bias(float2 x, float control = 0.5)
+float2 bias(float2 x, float2 control = 0.5)
 {
 
- 	return float2(bias(x.x, control), bias(x.y, control));
+ 	return float2(bias(x.x, control.x), bias(x.y, control.y));
 }
 
-float3 bias(float3 x, float control = 0.5)
+float3 bias(float3 x, float3 control = 0.5)
 {
 
- 	return float3(bias(x.x, control), bias(x.y, control), bias(x.z, control));
+ 	return float3(bias(x.x, control.x), bias(x.y, control.y), bias(x.z, control.z));
 }
 
 
@@ -45,16 +45,16 @@ float gain(float x, float control = 0.5)
 	else if(x < 0.5)     return 1-(bias(x * 2.0,-control)/2.0);   else  return 1-(bias(x * 2.0 - 1.0,1.0 + control)/2.0 + 0.5); 
 } 
 
-float2 gain(float2 x, float control = 0.5)
+float2 gain(float2 x, float2 control = 0.5)
 {
 
- 	return float2(gain(x.x, control), gain(x.y, control));
+ 	return float2(gain(x.x, control.x), gain(x.y, control.y));
 }
 
-float3 gain(float3 x, float control = 0.5)
+float3 gain(float3 x, float3 control = 0.5)
 {
 
- 	return float3(gain(x.x, control), gain(x.y, control), gain(x.z, control));
+ 	return float3(gain(x.x, control.x), gain(x.y, control.y), gain(x.z, control.z));
 }
 ////////////////////////////////////////////////////////////////
 
