@@ -804,8 +804,74 @@ float fKaliThorns(float3 p, float width=.12, float rotation = 1.8)
 }
 
 
+///////////////////////////////////////////////////////////////////////////////////////
+// Mandelbox Distance Estimator (Rrrola's version).
+///////////////////////////////////////////////////////////////////////////////////////
+#ifndef TRANSFORM_FXH
+#include <packs\happy.fxh\transform.fxh>
+#endif
+float fMandelbox(float3 pos, float MinRad2, float Scale, float3 Trans, float3 Julia, float3 PYR, int Iterations = 16) 
+{
+	float4 p = float4(pos,1); 
+	float4 p0 = float4(Julia,1);  // p.w is the distance estimate
+	float4 scale = float4(Scale, Scale, Scale, abs(Scale)) / MinRad2;
+	float absScalem1 = abs(Scale - 1.0);
+	float AbsScaleRaisedTo1mIters = pow(abs(Scale), float(1-Iterations));
+	float3x3 rot = rot3x3(PYR);
+	
+	for (int i=0; i<Iterations; i++) {
+		p.xyz = mul(p.xyz, rot);
+		p.xyz=abs(p.xyz)+Trans;
+		float r2 = dot(p.xyz, p.xyz);
+		p *= clamp(max(MinRad2/r2, MinRad2), 0.0, 1.0);  // dp3,div,max.sat,mul
+		p = p*scale + p0;
+	
+	}
+	return ((length(p.xyz) - absScalem1) / p.w - AbsScaleRaisedTo1mIters);
+}
+///////////////////////////////////////////////////////////////////////////////////////
 
-
+///////////////////////////////////////////////////////////////////////////////////////
+// Fractal Qube Ported from Fragmentarium 'BioCube' example by Darkbeam
+///////////////////////////////////////////////////////////////////////////////////////
+#ifndef TRANSFORM_FXH
+#include <packs\happy.fxh\transform.fxh>
+#endif
+float fFractalQube(float3 p, float Scale, float3 Offset, float3 Offset2, float3 Rot, float Qube, int Iterations)
+{
+	float3x3 fracRotation1 = Scale * rot3x3(Rot);
+	float t; 
+	int n = 0;
+    float scalep = 1;
+	float3 z0 = p;
+	p = abs(p);
+       //z -= (1,1,1);
+	if (p.y>p.x) p.xy = p.yx;
+	if (p.z>p.x) p.xz = p.zx;
+	if (p.y>p.x) p.xy = p.yx;
+    float d = 1.0- p.x;
+    p = z0;
+	// Folds.
+	//Dodecahedral
+	while (n < Iterations) 
+	{
+		p = mul(p, fracRotation1);
+		p = abs(p);
+	    p -= Offset;
+		if (p.y>p.x) p.xy = p.yx;
+		if (p.z>p.x) p.xz = p.zx;
+		if (p.y>p.x) p.xy = p.yx;
+	    p -= Offset2;
+		if (p.y>p.x) p.xy = p.yx;
+		if (p.z>p.x) p.xz = p.zx;
+		if (p.y>p.x) p.xy = p.yx;
+	
+		n++;  scalep *= Scale;
+	    d = abs(min(Qube/n-d,(+p.x)/scalep));
+	}
+	return d;
+}
+///////////////////////////////////////////////////////////////////////////////////////
 
 
 ////////////////////////////////////////////////////////////////
