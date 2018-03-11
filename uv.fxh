@@ -184,5 +184,72 @@ float3 triPlaneNormal(Texture2D tex, SamplerState s, float3 p, float3 n, float s
     return normalize((n1*m.x + n2*m.y + n3*m.z) / (m.x + m.y + m.z));
 }
 
+
+// Shader code by Inigo Quilez
+//http://www.iquilezles.org/www/articles/texturerepetition/texturerepetition.htm
+float4 sampleNoTile(Texture2D tex, in float2 uv, SamplerState samp, float lod = 0.0 )
+{
+    float2 p = floor( uv );
+    float2 f = frac( uv );
+	
+    // voronoi contribution
+    float4 va = 0.0;
+    float wt = 0.0;
+    for( int j=-1; j<=1; j++ )
+    for( int i=-1; i<=1; i++ )
+    {
+        float2 g = float2( float(i), float(j) );
+        //float4 o = hash4( p + g );
+    	// Hash Function
+    	float2 pg = p + g;
+    	float4 o = frac(sin(float4( 1.0+dot(pg,float2(37.0,17.0)), 
+                                              		2.0+dot(pg,float2(11.0,47.0)),
+                                              		3.0+dot(pg,float2(41.0,29.0)),
+                                             		4.0+dot(pg,float2(23.0,31.0))))*103.0);
+        float2 r = g - f + o.xy;
+        float d = dot(r,r);
+        float w = exp(-5.0*d );
+        float4 c = tex.SampleLevel(samp, uv + o.zw, lod);
+        va += w*c;
+        wt += w;
+    }
+    // normalization
+    return va/wt;
+}
+
+float4 sampleGradNoTile(Texture2D tex, in float2 uv, SamplerState samp )
+{
+    float2 p = floor( uv );
+    float2 f = frac( uv );
+	
+    // derivatives (for correct mipmapping)
+    float2 myddx = ddx( uv );
+    float2 myddy = ddy( uv );
+    
+    // voronoi contribution
+    float4 va = 0.0;
+    float wt = 0.0;
+    for( int j=-1; j<=1; j++ )
+    for( int i=-1; i<=1; i++ )
+    {
+        float2 g = float2( float(i), float(j) );
+        //float4 o = hash4( p + g );
+    	// Hash Function
+    	float2 pg = p + g;
+    	float4 o = frac(sin(float4( 1.0+dot(pg,float2(37.0,17.0)), 
+                                              		2.0+dot(pg,float2(11.0,47.0)),
+                                              		3.0+dot(pg,float2(41.0,29.0)),
+                                             		4.0+dot(pg,float2(23.0,31.0))))*103.0);
+        float2 r = g - f + o.xy;
+        float d = dot(r,r);
+        float w = exp(-5.0*d );
+        float4 c = tex.SampleGrad( samp, uv + o.zw, myddx, myddy );
+        va += w*c;
+        wt += w;
+    }
+    // normalization
+    return va/wt;
+}
+
 ////////////////////////////////////////////////////////////////
 // EOF

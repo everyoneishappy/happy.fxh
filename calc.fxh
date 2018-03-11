@@ -63,6 +63,7 @@ float3 placeHolderV3 (float3 p)
 
 //	note RK2 & RK4 will create some variables as 'FOO_FunctionName'
 
+// Runge-Kutta 2
 
 #define calcRK2V2(f, p, dT)								\
 	float halfDT_##f = dT * 0.5;						\
