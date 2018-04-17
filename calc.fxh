@@ -146,8 +146,8 @@ float3 placeHolderV3 (float3 p)
 #define calcGradS3(f, p, e) ( float3(calcDx3D(f, p, e), calcDy3D(f, p, e), calcDz3D(f, p, e)) )
 
 // Normals
-#define calcNormS2(f, p, e) -normalize( float2(calcDx2D(f, p, e), calcDy2D(f, p, e)) )
-#define calcNormS3(f, p, e) -normalize( float3(calcDx3D(f, p, e), calcDy3D(f, p, e), calcDz3D(f, p, e)) )
+#define calcNormS2(f, p, e) normalize( float2(calcDx2D(f, p, e), calcDy2D(f, p, e)) )
+#define calcNormS3(f, p, e) normalize( float3(calcDx3D(f, p, e), calcDy3D(f, p, e), calcDz3D(f, p, e)) )
 
 // Jacobian (gradients) of a 2D vector field as 2x2 matrix
 #define calcGradV2(f, p, e)(transpose(float2x2(calcDx2D, calcDy2D)))
