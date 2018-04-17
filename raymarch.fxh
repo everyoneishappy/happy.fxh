@@ -165,7 +165,7 @@ float calcAO(float3 p, float3 n)
 	{
 		float ff=aoScale;
 		ff*=pow(2,12*pow((float)i/iter,2));
-		float smp=max(0,1-SF3D(p-n*ff).x/ff);
+		float smp=max(0,1-SF3D(p+n*ff).x/ff);
 		shd+=pow(smp,2)/iter*pow(0.5,(float)i/iter);
 	}
 	ao=1-shd;
