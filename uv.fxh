@@ -146,11 +146,24 @@ cCylindrical Cylindrical;
 // Triplaner Texture mapping
 float4 triPlane(Texture2D tex, SamplerState s, float3 p, float3 n, float scale, float k)
 {
-	p*= scale;
+	 p *= scale;
     float3 m = pow( abs( n ), k );
     float4 x = tex.Sample( s, p.yz );
     float4 y = tex.Sample( s, p.zx );
     float4 z = tex.Sample( s, p.xy );
+    return (x*m.x + y*m.y + z*m.z) / (m.x + m.y + m.z);
+}
+
+// Triplaner Texture mapping w/ gradients
+float4 triPlane(Texture2D tex, SamplerState s, float3 p, float3 n, float3 gx, float3 gy, float scale = 1.0, float k = 4.0)
+{
+    p *= scale;
+    gx *= scale;
+    gy *= scale;
+    float3 m = pow( abs( n ), k );
+    float4 x = tex.SampleGrad(s, p.yz, gx.yz, gy.yz);
+    float4 y = tex.SampleGrad(s, p.zx, gx.zx, gy.zx);
+    float4 z = tex.SampleGrad(s, p.xy, gx.xy, gy.xy);
     return (x*m.x + y*m.y + z*m.z) / (m.x + m.y + m.z);
 }
 
