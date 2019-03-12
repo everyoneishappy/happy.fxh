@@ -1042,6 +1042,16 @@ float2 pMirrorOctant (inout float2 p, float2 dist)
 }
 
 // Reflect space at a plane
+
+float pReflect(inout float2 p, float2 planeNormal, float offset) 
+{
+	float t = dot(p, planeNormal)+offset;
+	if (t < 0) {
+		p = p - (2*t)*planeNormal;
+	}
+	return sgn(t);
+}
+
 float pReflect(inout float3 p, float3 planeNormal, float offset) 
 {
 	float t = dot(p, planeNormal)+offset;

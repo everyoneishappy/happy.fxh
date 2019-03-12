@@ -72,6 +72,16 @@ float3 gain(float3 x, float3 control = 0.5)
  }
 
 
+float pulse(float input, float center, float slopeWidth, float centerWidth = 0.0)
+{
+	centerWidth *= 0.5;
+    input = abs(input - center);
+	input -= centerWidth;
+    if(input > slopeWidth) return 0.0f;
+    input /= slopeWidth;
+	return 1.0 - input;
+}
+
 float cubicPulse(float input, float center, float width)
 {
     input = abs(input - center);
