@@ -1,6 +1,6 @@
-<!DOCTYPE PATCH  SYSTEM "http://vvvv.org/versions/vvvv50beta36.dtd" >
-   <PATCH nodename="C:\Users\happy\Desktop\Dropbox\02_Tools\VVVV\vvvversions\vvvv_50beta36_x64\packs\Happy.fxh\nodes\modules\ShaderWatcher (DX11 Shader).v4p" scrollx="0" scrolly="0" systemname="ShaderWatcher (DX11 Shader)" filename="C:\Users\Kyle\Desktop\Dropbox\VVVV Files\vvvv_50beta35_x64\packs\FieldTrip\Nodes\modules\ShaderWatcher (DX11 Shader).v4p">
-   <BOUNDS type="Window" left="2265" top="1005" width="12375" height="8385">
+<!DOCTYPE PATCH  SYSTEM "http://vvvv.org/versions/vvvv50beta38.1.dtd" >
+   <PATCH nodename="C:\Users\happy\Desktop\Dropbox\02_Tools\VVVV\vvvversions\vvvv_50beta38.1_x64\packs\Happy.fxh\nodes\modules\ShaderWatcher (DX11 Shader).v4p" scrollx="0" scrolly="90" systemname="ShaderWatcher (DX11 Shader)" filename="C:\Users\Kyle\Desktop\Dropbox\VVVV Files\vvvv_50beta35_x64\packs\FieldTrip\Nodes\modules\ShaderWatcher (DX11 Shader).v4p">
+   <BOUNDS type="Window" left="2265" top="1005" width="16350" height="9390">
    </BOUNDS>
    <NODE nodename="IOBox (String)" componentmode="InABox" id="12" systemname="IOBox (String)">
    <BOUNDS type="Box" left="2205" top="825" width="795" height="240">
@@ -21,9 +21,9 @@
    </PIN>
    </NODE>
    <NODE nodename="IOBox (String)" componentmode="InABox" id="21" systemname="IOBox (String)">
-   <BOUNDS type="Box" left="2115" top="6915" width="930" height="240">
+   <BOUNDS type="Box" left="2115" top="7560" width="930" height="240">
    </BOUNDS>
-   <BOUNDS type="Node" left="2115" top="6915" width="0" height="0">
+   <BOUNDS type="Node" left="2115" top="7560" width="0" height="0">
    </BOUNDS>
    <PIN pinname="Default" slicecount="1" values="||">
    </PIN>
@@ -48,7 +48,7 @@
    </PACK>
    <PACK Name="VVVV.Packs" Version="0.2.0">
    </PACK>
-   <PACK Name="addonpack" Version="36.0.0">
+   <PACK Name="addonpack" Version="38.1.0">
    </PACK>
    <NODE systemname="AsString (Raw)" nodename="AsString (Raw)" componentmode="Hidden" id="61">
    <BOUNDS type="Node" left="2085" top="4305" width="100" height="100">
@@ -162,8 +162,6 @@
    </NODE>
    <LINK srcnodeid="66" srcpinname="Output" dstnodeid="71" dstpinname="Operand 1">
    </LINK>
-   <LINK srcnodeid="71" srcpinname="Result" dstnodeid="21" dstpinname="Input String">
-   </LINK>
    <NODE nodename="IOBox (String)" componentmode="InABox" id="72">
    <BOUNDS type="Box" left="2820" top="5985" width="2430" height="240">
    </BOUNDS>
@@ -189,14 +187,14 @@
    </PIN>
    <PIN pinname="Output" visible="1">
    </PIN>
-   <PIN pinname="Input Count" slicecount="1" values="2">
+   <PIN pinname="Input Count" slicecount="1" values="3">
    </PIN>
    <PIN pinname="Input 3" visible="1" slicecount="1" values="0">
    </PIN>
    </NODE>
    <LINK srcnodeid="74" srcpinname="Output" dstnodeid="60" dstpinname="Read">
    </LINK>
-   <PACK Name="dx11" Version="1.0.5">
+   <PACK Name="dx11" Version="1.3.1.1">
    </PACK>
    <NODE systemname="Change (file)" filename="%VVVV%\packs\FieldTrip\nodes\plugins\FieldTripHelpers.dll" nodename="Change (file)" componentmode="Hidden" id="73">
    <BOUNDS type="Node" left="3315" top="2385" width="100" height="100">
@@ -213,5 +211,35 @@
    <LINK srcnodeid="73" srcpinname="Changed" dstnodeid="74" dstpinname="Input 1">
    </LINK>
    <LINK srcnodeid="73" srcpinname="Renamed" dstnodeid="74" dstpinname="Input 2">
+   </LINK>
+   <NODE systemname="S+H (String)" nodename="S+H (String)" componentmode="Hidden" id="75">
+   <BOUNDS type="Node" left="2175" top="6840" width="100" height="100">
+   </BOUNDS>
+   <PIN pinname="Input" visible="1">
+   </PIN>
+   <PIN pinname="Output" visible="1">
+   </PIN>
+   <PIN pinname="Set" slicecount="1" visible="1" values="0">
+   </PIN>
+   </NODE>
+   <LINK srcnodeid="71" srcpinname="Result" dstnodeid="75" dstpinname="Input">
+   </LINK>
+   <LINK srcnodeid="75" srcpinname="Output" dstnodeid="21" dstpinname="Input String">
+   </LINK>
+   <PACK Name="dx11.particles" Version="1.0.6">
+   </PACK>
+   <LINK srcnodeid="74" srcpinname="Output" dstnodeid="75" dstpinname="Set">
+   </LINK>
+   <NODE systemname="Change (String)" nodename="Change (String)" componentmode="Hidden" id="76">
+   <BOUNDS type="Node" left="4695" top="3300" width="100" height="100">
+   </BOUNDS>
+   <PIN pinname="Input" visible="1">
+   </PIN>
+   <PIN pinname="OnChange" visible="1">
+   </PIN>
+   </NODE>
+   <LINK srcnodeid="68" srcpinname="Output String" dstnodeid="76" dstpinname="Input">
+   </LINK>
+   <LINK srcnodeid="76" srcpinname="OnChange" dstnodeid="74" dstpinname="Input 3">
    </LINK>
    </PATCH>
