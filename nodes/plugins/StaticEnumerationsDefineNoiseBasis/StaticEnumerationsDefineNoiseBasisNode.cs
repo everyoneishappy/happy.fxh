@@ -15,7 +15,7 @@ namespace VVVV.Nodes
 
 	public enum NoiseBasis
 	{
-		sine, valueNoise, perlin, simplex, worleyFast, worley
+		random, sine, valueNoise, perlin, simplex, worleyFast, worley
 	}
 	
 	public enum NoiseInflection

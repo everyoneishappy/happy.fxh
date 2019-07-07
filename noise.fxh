@@ -130,6 +130,195 @@ float3 FUNCTIONNAME##3(float3 p, out float3 gradX, out float3 gradY, out float3 
     return float3(nx.x, ny.x, nz.x);                                                    \
 };
 
+//###############################################################################
+// Hash without Sine
+// Creative Commons Attribution-ShareAlike 4.0 International Public License
+// Created by David Hoskins.
+
+// https://www.shadertoy.com/view/4djSRW
+//----------------------------------------------------------------------------------------
+//  1 out, 1 in...
+float hash11(float p)
+{
+    p = frac(p * .1031);
+    p *= p + 19.19;
+    p *= p + p;
+    return frac(p);
+}
+
+//----------------------------------------------------------------------------------------
+//  1 out, 2 in...
+float hash12(float2 p)
+{
+    float3 p3  = frac(float3(p.xyx) * .1031);
+    p3 += dot(p3, p3.yzx + 19.19);
+    return frac((p3.x + p3.y) * p3.z);
+}
+
+//----------------------------------------------------------------------------------------
+//  1 out, 3 in...
+float hash13(float3 p3)
+{
+    p3  = frac(p3 * .1031);
+    p3 += dot(p3, p3.yzx + 19.19);
+    return frac((p3.x + p3.y) * p3.z);
+}
+
+//----------------------------------------------------------------------------------------
+//  2 out, 1 in...
+float2 hash21(float p)
+{
+    float3 p3 = frac(float3(p.xxx) * float3(.1031, .1030, .0973));
+    p3 += dot(p3, p3.yzx + 19.19);
+    return frac((p3.xx+p3.yz)*p3.zy);
+
+}
+
+//----------------------------------------------------------------------------------------
+///  2 out, 2 in...
+float2 hash22(float2 p)
+{
+    float3 p3 = frac(float3(p.xyx) * float3(.1031, .1030, .0973));
+    p3 += dot(p3, p3.yzx+19.19);
+    return frac((p3.xx+p3.yz)*p3.zy);
+
+}
+
+//----------------------------------------------------------------------------------------
+///  2 out, 3 in...
+float2 hash23(float3 p3)
+{
+    p3 = frac(p3 * float3(.1031, .1030, .0973));
+    p3 += dot(p3, p3.yzx+19.19);
+    return frac((p3.xx+p3.yz)*p3.zy);
+}
+
+//----------------------------------------------------------------------------------------
+//  3 out, 1 in...
+float3 hash31(float p)
+{
+   float3 p3 = frac(float3(p.xxx) * float3(.1031, .1030, .0973));
+   p3 += dot(p3, p3.yzx+19.19);
+   return frac((p3.xxy+p3.yzz)*p3.zyx); 
+}
+
+
+//----------------------------------------------------------------------------------------
+///  3 out, 2 in...
+float3 hash32(float2 p)
+{
+    float3 p3 = frac(float3(p.xyx) * float3(.1031, .1030, .0973));
+    p3 += dot(p3, p3.yxz+19.19);
+    return frac((p3.xxy+p3.yzz)*p3.zyx);
+}
+
+//----------------------------------------------------------------------------------------
+///  3 out, 3 in...
+float3 hash33(float3 p3)
+{
+    p3 = frac(p3 * float3(.1031, .1030, .0973));
+    p3 += dot(p3, p3.yxz+19.19);
+    return frac((p3.xxy + p3.yxx)*p3.zyx);
+
+}
+
+//----------------------------------------------------------------------------------------
+// 4 out, 1 in...
+float4 hash41(float p)
+{
+    float4 p4 = frac(float4(p.xxxx) * float4(.1031, .1030, .0973, .1099));
+    p4 += dot(p4, p4.wzxy+19.19);
+    return frac((p4.xxyz+p4.yzzw)*p4.zywx);
+    
+}
+
+//----------------------------------------------------------------------------------------
+// 4 out, 2 in...
+float4 hash42(float2 p)
+{
+    float4 p4 = frac(float4(p.xyxy) * float4(.1031, .1030, .0973, .1099));
+    p4 += dot(p4, p4.wzxy+19.19);
+    return frac((p4.xxyz+p4.yzzw)*p4.zywx);
+
+}
+
+//----------------------------------------------------------------------------------------
+// 4 out, 3 in...
+float4 hash43(float3 p)
+{
+    float4 p4 = frac(float4(p.xyzx)  * float4(.1031, .1030, .0973, .1099));
+    p4 += dot(p4, p4.wzxy+19.19);
+    return frac((p4.xxyz+p4.yzzw)*p4.zywx);
+}
+
+//----------------------------------------------------------------------------------------
+// 4 out, 4 in...
+float4 hash44(float4 p4)
+{
+    p4 = frac(p4  * float4(.1031, .1030, .0973, .1099));
+    p4 += dot(p4, p4.wzxy+19.19);
+    return frac((p4.xxyz+p4.yzzw)*p4.zywx);
+}
+
+//----------------------------------------------------------------------------------------
+//###############################################################################
+
+
+////////////////////////////////////////////////////////////////
+//
+//             Random Noise Basis 
+//
+////////////////////////////////////////////////////////////////
+#ifndef RANDOM_ITERATIONS
+#define RANDOM_ITERATIONS 4
+#endif
+float random (float2 p)
+{
+    float a = 0.0;
+    for (int t = 0; t < RANDOM_ITERATIONS; t++)
+    {
+        float v = float(t+1)*.152;
+        float2 pos = (p.xy * v * 1500. + 50.);
+        
+        float3 p3  = frac(float3(pos.xyx) * .1031);
+        p3 += dot(p3, p3.yzx + 19.19);
+        a += frac((p3.x + p3.y) * p3.z);
+        
+    }
+    return a / float(RANDOM_ITERATIONS);
+}
+
+float random (float3 p)
+{
+    float a = 0.0;
+    for (int t = 0; t < RANDOM_ITERATIONS; t++)
+    {
+        float v = float(t+1)*.132;
+        float3 pos = (p * v * 1500.  + 50.0);
+        
+    float3 p3 = frac(pos * float3(.1031, .1030, .0973));
+    p3 += dot(p3, p3.yxz+19.19);
+    a += frac((p3.x + p3.y) * p3.z);
+        
+    }
+    return a / float(RANDOM_ITERATIONS);
+}
+
+//gradient functions are just random, for random, man
+NOISE2DVECTORFUNCTION(random)
+//NOISE2DVECTORGRADFUNCTION(valueNoiseGrad)
+NOISE3DVECTORFUNCTION(random)
+//NOISE3DVECTORGRADFUNCTION(valueNoiseGrad)
+
+
+// return a divergence-free 3D vector field (DFV)
+float3 randomDFV(float3 p, float offset = 67)
+{
+    //float4 n1 = valueNoiseGrad(p);
+    //float4 n2 = valueNoiseGrad(p+offset);
+    //return cross(n1.yzw, n2.yzw);
+    return random3(p);
+}
 
 
 ////////////////////////////////////////////////////////////////
@@ -1097,14 +1286,20 @@ cCrackle Crackle;
 //             Worley Basis 
 //
 ////////////////////////////////////////////////////////////////
+
+
 float2 w2dHash( float2 p )
 {
+    return hash22(p);
+
     p = float2( dot(p,float2(127.1,311.7)), dot(p,float2(269.5,183.3)) );
     return frac(sin(p)*43758.5453);
 }
 
 float3 w3dHash( float3 x )
 {
+    return hash33 (x);
+
     x = float3( dot(x,float3(127.1,311.7, 74.7)),
               dot(x,float3(269.5,183.3,246.1)),
               dot(x,float3(113.5,271.9,124.6)));
