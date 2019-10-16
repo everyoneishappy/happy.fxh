@@ -156,6 +156,16 @@ float3 map(float3 Input, float3 InMin, float3 InMax, float3 OutMin, float3 OutMa
 	return vec;
 }
 
+float4 map(float4 Input, float4 InMin, float4 InMax, float4 OutMin, float4 OutMax)
+{
+	float4 vec;
+	vec.x = map( Input.x,  InMin.x,  InMax.x,  OutMin.x,  OutMax.x);
+	vec.y = map( Input.y,  InMin.y,  InMax.y,  OutMin.y,  OutMax.y);
+	vec.z = map( Input.z,  InMin.z,  InMax.z,  OutMin.z,  OutMax.z);
+	vec.w = map( Input.w,  InMin.w,  InMax.w,  OutMin.w,  OutMax.w);
+	return vec;
+}
+
 float2 mapClamp(float2 Input, float2 InMin, float2 InMax, float2 OutMin, float2 OutMax)
 {
 	float2 vec;
@@ -170,6 +180,16 @@ float3 mapClamp(float3 Input, float3 InMin, float3 InMax, float3 OutMin, float3 
 	vec.x = mapClamp( Input.x,  InMin.x,  InMax.x,  OutMin.x,  OutMax.x);
 	vec.y = mapClamp( Input.y,  InMin.y,  InMax.y,  OutMin.y,  OutMax.y);
 	vec.z = mapClamp( Input.z,  InMin.z,  InMax.z,  OutMin.z,  OutMax.z);
+	return vec;
+}
+
+float4 mapClamp(float4 Input, float4 InMin, float4 InMax, float4 OutMin, float4 OutMax)
+{
+	float4 vec;
+	vec.x = mapClamp( Input.x,  InMin.x,  InMax.x,  OutMin.x,  OutMax.x);
+	vec.y = mapClamp( Input.y,  InMin.y,  InMax.y,  OutMin.y,  OutMax.y);
+	vec.z = mapClamp( Input.z,  InMin.z,  InMax.z,  OutMin.z,  OutMax.z);
+	vec.w = mapClamp( Input.w,  InMin.w,  InMax.w,  OutMin.w,  OutMax.w);
 	return vec;
 }
 
@@ -190,6 +210,16 @@ float3 mapWrap(float3 Input, float3 InMin, float3 InMax, float3 OutMin, float3 O
 	return vec;
 }
 
+float4 mapWrap(float4 Input, float4 InMin, float4 InMax, float4 OutMin, float4 OutMax)
+{
+	float4 vec;
+	vec.x = mapWrap( Input.x,  InMin.x,  InMax.x,  OutMin.x,  OutMax.x);
+	vec.y = mapWrap( Input.y,  InMin.y,  InMax.y,  OutMin.y,  OutMax.y);
+	vec.z = mapWrap( Input.z,  InMin.z,  InMax.z,  OutMin.z,  OutMax.z);
+	vec.w = mapWrap( Input.w,  InMin.w,  InMax.w,  OutMin.w,  OutMax.w);
+	return vec;
+}
+
 float2 mapMirror(float2 Input, float2 InMin, float2 InMax, float2 OutMin, float2 OutMax)
 {
 	float2 vec;
@@ -204,6 +234,16 @@ float3 mapMirror(float3 Input, float3 InMin, float3 InMax, float3 OutMin, float3
 	vec.x = mapMirror( Input.x,  InMin.x,  InMax.x,  OutMin.x,  OutMax.x);
 	vec.y = mapMirror( Input.y,  InMin.y,  InMax.y,  OutMin.y,  OutMax.y);
 	vec.z = mapMirror( Input.z,  InMin.z,  InMax.z,  OutMin.z,  OutMax.z);
+	return vec;
+}
+
+float4 mapMirror(float4 Input, float4 InMin, float4 InMax, float4 OutMin, float4 OutMax)
+{
+	float4 vec;
+	vec.x = mapMirror( Input.x,  InMin.x,  InMax.x,  OutMin.x,  OutMax.x);
+	vec.y = mapMirror( Input.y,  InMin.y,  InMax.y,  OutMin.y,  OutMax.y);
+	vec.z = mapMirror( Input.z,  InMin.z,  InMax.z,  OutMin.z,  OutMax.z);
+	vec.w = mapMirror( Input.w,  InMin.w,  InMax.w,  OutMin.w,  OutMax.w);
 	return vec;
 }
 
