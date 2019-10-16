@@ -24,17 +24,21 @@ float placeHolderSDF(float3 p)
 #define SF3D placeHolderSDF
 #endif
 
+
+
 float3 rayMarch(float3 rayPos, float3 rayDir, float stepLength = .9, float minDist = 0.1, float maxDist = 200.0, int maxIter = 120)
 {
 	float3 startPos = rayPos + rayDir * minDist;
 	float3 p = startPos;
+	float z = minDist;
 	maxDist -= minDist;
 	for(int i=0; i<maxIter; i++)
 	{
 		float dist = SF3D(p);
-		p += rayDir * dist * stepLength;	
-		float z = length(p-startPos);
-		if(abs(dist) < .002 * z || z > maxDist) break;
+		float rayStep = stepLength * dist;
+		p += rayDir * rayStep;	
+		z += rayStep;
+		if(abs(dist) < 0.0001 * z || z > maxDist) break;
 	}
 	return p;
 }
