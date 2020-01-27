@@ -1,5 +1,26 @@
 #define SPLINE_FXH
 
+
+float qBezier(float t, float p0, float p1, float p2)
+{
+  return (1-t)*(1-t)*p0+2*(1-t)*t*p1+t*t*p2;
+}
+
+float2 qBezier(float t, float2 p0, float2 p1, float2 p2)
+{
+  return (1-t)*(1-t)*p0+2*(1-t)*t*p1+t*t*p2;
+}
+
+float3 qBezier(float t, float3 p0, float3 p1, float3 p2)
+{
+  return (1-t)*(1-t)*p0+2*(1-t)*t*p1+t*t*p2;
+}
+
+float4 qBezier(float t, float4 p0, float4 p1, float4 p2)
+{
+  return (1-t)*(1-t)*p0+2*(1-t)*t*p1+t*t*p2;
+}
+
 float BSplineCubic(float p1, float p2, float p3, float p4, float range) 
 {
     float mu = frac(range);
@@ -32,6 +53,18 @@ float3 BSplineCubic(float3 p1, float3 p2, float3 p3, float3 p4, float range)
   
   return (a3+mu*(a2+mu*(a1+mu*a0)))/6.;
 }
+
+float4 BSplineCubic(float4 p1, float4 p2, float4 p3, float4 p4, float range) 
+{
+    float mu = frac(range);
+    float4 a0 = p4 - p3*3 + p2*3 - p1;
+    float4 a1 = p3*3 - p2*6 + p1*3.;
+  float4 a2 = p3*3 - p1*3;
+    float4 a3 = p3 + p2*4 + p1;
+  
+  return (a3+mu*(a2+mu*(a1+mu*a0)))/6.;
+}
+
 
 struct SplinePosTan3
 {
