@@ -1350,17 +1350,19 @@ float4 fHexGrid( float2 p, float r )
 
 
 // sample 3D distance field texture
-float fDistVolume (float3 p, Texture3D dfTex, SamplerState s, float4x4 invMat ={ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 })
+float fDistVolume (float3 p, Texture3D dfTex, SamplerState s, float4x4 invMat ={ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 }, bool repeat = false)
 {
 	float margin = 0.05;
 	//float scale = length(float3(invMat._11, invMat._12, invMat._13)) ;   // just get the X scale, scaling must be uniform
 	// max scale component
 	float scale = vmax(float3(length(float3(invMat._11, invMat._12, invMat._13)), length(float3(invMat._21, invMat._22, invMat._23)), length(float3(invMat._31, invMat._32, invMat._33)))) ;
 
-	float bounds = .5;
 	float3 pos = mul(float4(p,1), invMat).xyz;
+	
+	if(repeat) return dfTex.SampleLevel(s, pos+.5, 0).x / scale;
+	
+	float bounds = .5;
 	float boundsCheck = vmax(abs(pos)) - bounds + margin;
-
 	if (boundsCheck < margin) return dfTex.SampleLevel(s, pos+.5, 0).x / scale;
 	return (boundsCheck + margin) / scale;
 }

@@ -40,3 +40,7 @@ Headers
 #ifndef SPLINE_FXH
 #include <packs\happy.fxh\spline.fxh>
 #endif
+
+#ifndef MATH_FXH
+#include <packs\happy.fxh\math.fxh>
+#endif
