@@ -291,8 +291,22 @@ float fBox(float3 p, float3 b)
 	return length(max(d, 0)) + vmax(min(d, 0));
 }
 
-//Rounded Cubes: 
+// Rounded Cubes: 
 float fRBox(float3 p,float3 b,float rad ) { return length(max(abs(p)-b+rad,0.0))-rad; }
+
+// Box Frame
+float fBoxFrame( float3 p, float3 b, float e)
+{
+  
+	p = abs(p  )-b;
+  float3 q = abs(p+e)-e;
+
+  return min(min(
+      length(max(float3(p.x,q.y,q.z),0.0))+min(max(p.x,max(q.y,q.z)),0.0),
+      length(max(float3(q.x,p.y,q.z),0.0))+min(max(q.x,max(p.y,q.z)),0.0)),
+      length(max(float3(q.x,q.y,p.z),0.0))+min(max(q.x,max(q.y,p.z)),0.0));
+}
+
 
 // Blobby ball object. You've probably seen it somewhere. This is not a correct distance bound, beware.
 float fBlob(float3 p) 
@@ -1098,6 +1112,31 @@ float2 pCart2Polar (float2 p)
 };
 
 
+float3 pTwist(float3 p, float strength)
+{
+    float c = cos(strength * p.y);
+    float s = sin(strength * p.y);
+    float2x2  m = float2x2(c, s, -s, c);
+    float3  q = float3(mul(p.xz, m), p.y);
+    return q;
+}
+
+
+// Revolve a 2D signed distance field in to a third dimension
+float2 pRevolution( in float3 p, float w )
+{
+    return float2( length(p.xz) - w, p.y );
+}
+
+// 	Elongate- strech a SDF primitive.  Should be used like so: 
+//	float4 w = pElongate(p);
+//	float Distance = SDF(w.xyz) + w.w;
+float4 pElongate( in float3 p, in float3 h )
+{
+    //return float3( p-clamp(p,-h,h)); // faster, but produces zero in the interior elongated box
+    float3 q = abs(p)-h;
+    return float4( max(q,0.0), min(max(q.x,max(q.y,q.z)),0.0) );
+}
 ////////////////////////////////////////////////////////////////
 //
 //             OBJECT COMBINATION OPERATORS
@@ -1165,6 +1204,8 @@ float fOpExtrudeRound(float p, float d, float depth, float r)
 {
 	return fOpIntersectionRound(abs(p)-depth, d, r);
 }
+
+
 
 
 
