@@ -134,6 +134,15 @@ float fCircle(float2 p, float radius)
 	return length(p) - radius;
 }
 
+// c is the sin/cos of the angle. r is the radius
+float fSector(float2 p, float2 c, float r)
+{
+    p.x = abs(p.x);
+    float l = length(p) - r;
+	float m = length(p - c*clamp(dot(p,c),0.0,r) );
+    return max(l,m*sign(c.y*p.x-c.x*p.y));
+}
+
 float fEclipse(float2 p, float2 r)
 {
 	float a2 = r.x * r.x;
